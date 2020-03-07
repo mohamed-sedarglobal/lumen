@@ -5,5 +5,5 @@ class Todo extends Model
 {
    //
    protected $table = 'todos';
-   protected $fillable = ['name','description','category','status','user_id'];
+   protected $fillable = ['name','description','category','status','user_id', 'date'];
 }

@@ -72,6 +72,7 @@ $factory->define(Todo::class, function (Faker $faker) {
                     'Completed',
                     'Snoozed',
                     'Overdue',
+                    'Pending',
                 ]),
         'user_id' => $faker->randomElement($users),
     ];

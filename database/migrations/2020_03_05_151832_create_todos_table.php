@@ -21,6 +21,7 @@ class CreateTodosTable extends Migration
             $table->string('status');
             $table->unsignedBigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');
+            $table->date('date');
             $table->timestamps();
         });
 

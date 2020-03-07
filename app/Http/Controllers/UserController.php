@@ -6,10 +6,16 @@ use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+// use Auth;
+use Exception;
 
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        //
+    }
 
     public function authenticate(Request $request)
    {
@@ -17,13 +23,33 @@ class UserController extends Controller
             'email' => 'required',
             'password' => 'required'
         ]);
-        $user = User::where('email', $request->input('email'))->first();
-        if(Hash::check($request->input('password'), $user->password)){
-            $apikey = base64_encode(str_random(40));
-            Users::where('email', $request->input('email'))->update(['api_key' => "$apikey"]);;
-            return response()->json(['status' => 'success','api_key' => $apikey]);
-        }else{
-            return response()->json(['status' => 'fail'],401);
+        try{
+
+            $invalidUser = response()->json([
+                    'error_no' => '-999',
+                    'error_msg' => 'Invalid User',
+                ]);
+            $user = User::where('email', $request->input('email'))->first();
+            if(!($user)){
+                return $invalidUser;
+            }
+            if(md5($request->input('password')) == $user->password){
+                $apikey = base64_encode(md5(rand(123456789,987654321)));
+                User::where('email', $request->input('email'))->update(['api_key' => "$apikey"]);
+                $user = User::where('email', $request->input('email'))->first();
+                return response()->json([
+                    'error_no' => '0',
+                    'error_msg' => 'success',
+                    'result' =>$user
+                ]);
+            }else{
+                return $invalidUser;
+            }
+        }catch(Exception $e){
+            return response()->json([
+                'error_no' => $e->errorInfo[1],
+                'error_msg' => $e->errorInfo[2],
+            ]);
         }
    }
     /**
@@ -33,10 +59,9 @@ class UserController extends Controller
      */
     public function index()
     {
-     
-     $users = User::all();
+        $users = User::all();
 
-     return response()->json($users);
+        return response()->json($users);
 
     }
 
@@ -49,24 +74,37 @@ class UserController extends Controller
                 'user_name' => 'required',
                 'email' => 'required',
                 'password' => 'required',
+                'mobile_no' => 'required|regex:/[+0-9]/|not_regex:/[a-z]/|min:9',
+                'gender' => 'required',
+                'birthday' => 'required|date|date_format:Y-m-d',
             ],
             [
-            // 'user_name.required'  => ['A price is required','A price is number format'],
-            // 'email.required'  => ['A email is required','A price is number format']
+            // 'user_name.required'  => ['A name is required',],
+            // 'email.required'  => ['A email is required',]
             ]
         );
-
-       $user->first_name= $request->first_name;
-       $user->last_name = $request->last_name;
-       $user->user_name= $request->user_name;
-       $user->password= md5($request->password);
-       $user->email= $request->email;
-       $user->mobile_no= $request->mobile_no;
-       $user->gender= $request->gender;
-       $user->birthday= $request->birthday;
-       $user->save();
-
-       return response()->json($user);
+        try{
+               $user->first_name= $request->first_name;
+               $user->last_name = $request->last_name;
+               $user->user_name = $request->user_name;
+               $user->password= md5($request->password);
+               $user->email= $request->email;
+               $user->mobile_no= $request->mobile_no;
+               $user->gender= $request->gender;
+               $user->birthday= $request->birthday;
+               $user->api_key = '';
+               $user->save();
+            return response()->json([
+                    'error_no' => 0,
+                    'error_msg' => 'success',
+                    'result' => $user
+                    ]);
+        }catch(Exception $e){
+            return response()->json([
+                'error_no' => $e->errorInfo[1],
+                'error_msg' => $e->errorInfo[2],
+            ]);
+        }
      }
 
      public function show($id)

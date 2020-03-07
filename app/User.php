@@ -11,13 +11,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     use Authenticatable, Authorizable;
    //
    	protected $table = 'users';
-  	protected $fillable = ['first_name', 'last_name', 'user_name', 'password', 'email', 'mobile_no', 'gender', 'birthday'];
+  	protected $fillable = ['first_name', 'last_name', 'user_name', 'password', 'email', 'mobile_no', 'gender', 'birthday','api_key'];
 
    	protected $hidden = [
         'password',
     ];
 
-     public function todo()
+    public function todo()
    {
        return $this->hasMany('App\Todo','user_id');
    }
